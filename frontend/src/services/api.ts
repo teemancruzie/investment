@@ -4,8 +4,16 @@
  */
 import { installDemoFetch } from "@/demo/install";
 
-export const API_URL =
-  (import.meta.env['VITE_API_URL'] as string | undefined) ?? "http://localhost:5000/api";
+const configuredApiUrl = import.meta.env.VITE_API_URL as string | undefined;
+
+export const API_URL = (
+  configuredApiUrl ||
+  (import.meta.env.DEV ? "http://localhost:5000/api" : "")
+).replace(/\/+$/, "");
+
+if (!API_URL) {
+  console.error("VITE_API_URL is missing. Configure your Render API URL in Vercel.");
+}
 
 installDemoFetch(API_URL);
 
