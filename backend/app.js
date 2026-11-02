@@ -19,10 +19,24 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+const allowedOrigins = [
+  ...env.clientUrl.split(',').map((o) => o.trim()).filter(Boolean),
+  'https://investment-two-chi.vercel.app',
+  'http://localhost:5173',
+];
+
 app.use(
   cors({
-    origin: env.clientUrl.split(',').map((o) => o.trim()),
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(express.json({ limit: '1mb' }));
